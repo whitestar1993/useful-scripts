@@ -4,12 +4,16 @@ import requests
 from tkinter import Tk, Label, Entry, Button, filedialog, messagebox
 from bs4 import BeautifulSoup
 
-def download_mp3s(html_file, download_folder):
+def download_mp3s(web_address, download_folder):
     try:
-        print(f"Reading HTML file: {html_file}")
-        # Read the HTML file
-        with open(html_file, 'r', encoding='utf-8') as file:
-            html_content = file.read()
+        print(f"Fetching HTML content from: {web_address}")
+        # Fetch the HTML content
+        response = requests.get(web_address)
+        if response.status_code != 200:
+            print(f"Error fetching the HTML content: HTTP {response.status_code}")
+            messagebox.showerror("Error", f"Error fetching the HTML content: HTTP {response.status_code}")
+            return
+        html_content = response.text
         
         # Parse the HTML content
         print("Parsing HTML content...")
@@ -18,8 +22,8 @@ def download_mp3s(html_file, download_folder):
         # Find the link inside the noscript tag
         noscript = soup.find('noscript')
         if not noscript:
-            print("No <noscript> tag found in the HTML file.")
-            messagebox.showerror("Error", "No <noscript> tag found in the HTML file.")
+            print("No <noscript> tag found in the HTML content.")
+            messagebox.showerror("Error", "No <noscript> tag found in the HTML content.")
             return
         iframe = noscript.find('iframe')
         if not iframe:
@@ -79,12 +83,6 @@ def download_mp3s(html_file, download_folder):
         print(f"An error occurred: {e}")
         messagebox.showerror("Error", f"An error occurred: {e}")
 
-def browse_file():
-    filename = filedialog.askopenfilename(filetypes=[("HTML files", "*.html"), ("All files", "*.*")])
-    if filename:
-        html_entry.delete(0, 'end')
-        html_entry.insert(0, filename)
-
 def browse_folder():
     foldername = filedialog.askdirectory()
     if foldername:
@@ -92,22 +90,21 @@ def browse_folder():
         folder_entry.insert(0, foldername)
 
 def start_download():
-    html_file = html_entry.get()
+    web_address = web_entry.get()
     download_folder = folder_entry.get()
-    if not html_file or not download_folder:
-        messagebox.showerror("Error", "Please select both HTML file and download folder.")
+    if not web_address or not download_folder:
+        messagebox.showerror("Error", "Please enter both the web address and download folder.")
         return
-    download_mp3s(html_file, download_folder)
+    download_mp3s(web_address, download_folder)
 
 # Create the main window
 root = Tk()
 root.title("MP3 Downloader")
 
 # Create and place the widgets
-Label(root, text="HTML File:").grid(row=0, column=0, padx=5, pady=5, sticky='e')
-html_entry = Entry(root, width=50)
-html_entry.grid(row=0, column=1, padx=5, pady=5)
-Button(root, text="Browse...", command=browse_file).grid(row=0, column=2, padx=5, pady=5)
+Label(root, text="Web Address:").grid(row=0, column=0, padx=5, pady=5, sticky='e')
+web_entry = Entry(root, width=50)
+web_entry.grid(row=0, column=1, padx=5, pady=5)
 
 Label(root, text="Download Folder:").grid(row=1, column=0, padx=5, pady=5, sticky='e')
 folder_entry = Entry(root, width=50)
