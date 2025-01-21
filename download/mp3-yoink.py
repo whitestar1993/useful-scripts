@@ -151,7 +151,7 @@ def start_download(update_mode=True):
 
 # Create the main window
 root = Tk()
-root.title("JMP3W YOINK")
+root.title("MP3 YOINK")
 
 # Create and place the widgets
 Label(root, text="Web Address:").grid(row=0, column=0, padx=5, pady=5, sticky='e')
